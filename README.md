@@ -4,6 +4,7 @@
 
 ## 구성
 - **gateway**: 루트 경로(`/`)에서 "Hello, World!" 문자열을 반환합니다.
+- **greeting-service**: `/greeting` 경로에서 간단한 인사 메시지를 제공합니다.
 - **tracking-link API 연동**: gateway 모듈에서 Airbridge Tracking Link 목록과 세부 정보를 조회하는 엔드포인트(`/tracking-links/details`)를 제공합니다.
 - Airbridge API 호출은 Spring Cloud OpenFeign을 사용합니다.
 
@@ -22,6 +23,11 @@ mvn -q package
 
 ```bash
 cd gateway
+mvn spring-boot:run
+```
+
+```bash
+cd greeting-service
 mvn spring-boot:run
 ```
 
