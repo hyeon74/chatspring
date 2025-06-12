@@ -1,5 +1,6 @@
 package com.example.gateway.controller;
 
+import com.example.gateway.adaptor.RestMessage;
 import com.example.gateway.dto.TrackingLinkPageOutputDto;
 import com.example.gateway.service.TrackingLinkService;
 import com.example.gateway.dto.TrackingLinkListInputDto;
@@ -20,8 +21,8 @@ public class TrackingLinkController {
     }
 
     @GetMapping("/details")
-    public TrackingLinkPageOutputDto listDetails(TrackingLinkListRequestDto request) {
+    public RestMessage<TrackingLinkPageOutputDto> listDetails(TrackingLinkListRequestDto request) {
         TrackingLinkListInputDto params = request.toServiceDto();
-        return service.getTrackingLinkDetails(params);
+        return RestMessage.ok(service.getTrackingLinkDetails(params));
     }
 }

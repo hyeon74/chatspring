@@ -1,6 +1,8 @@
 package com.example.gateway.service;
 
 import com.example.gateway.client.AirbridgeClient;
+import com.example.gateway.adaptor.FeignClientAdaptor;
+import com.example.gateway.adaptor.RestMessage;
 import com.example.gateway.dto.TrackingLinkDetailDataDto;
 import com.example.gateway.dto.TrackingLinkDetailOutputDto;
 import com.example.gateway.dto.TrackingLinkDetailResponseDto;
@@ -19,6 +21,7 @@ import java.util.Map;
 public class TrackingLinkService {
 
     private final AirbridgeClient airbridgeClient;
+    private final FeignClientAdaptor feignClientAdaptor;
     private final String token;
     private final String language;
 
@@ -26,12 +29,13 @@ public class TrackingLinkService {
                                @Value("${airbridge.api.token:}") String token,
                                @Value("${airbridge.api.language:ko}") String language) {
         this.airbridgeClient = airbridgeClient;
+        String auth = token.isEmpty() ? null : "Bearer " + token;
+        this.feignClientAdaptor = new FeignClientAdaptor(airbridgeClient, auth, language);
         this.token = token;
         this.language = language;
     }
 
     public TrackingLinkPageOutputDto getTrackingLinkDetails(TrackingLinkListInputDto params) {
-        String auth = token.isEmpty() ? null : "Bearer " + token;
 
         // *****************************
         // 1단계: 전체 건수 조회
@@ -41,8 +45,12 @@ public class TrackingLinkService {
         Map<String, Object> countParams = new HashMap<>();
         countParams.put("from", params.getFrom());
         countParams.put("to", params.getTo());
-        TrackingLinkListResponseDto countResponse =
-                airbridgeClient.getTrackingLinks(auth, language, countParams);
+        RestMessage<TrackingLinkListResponseDto> countMessage =
+                feignClientAdaptor.get()
+                        .uri("/tracking-links")
+                        .params(countParams)
+                        .retrieve(TrackingLinkListResponseDto.class);
+        TrackingLinkListResponseDto countResponse = countMessage.getData();
 
         int totalCount = 0;
         if (countResponse != null && countResponse.getData() != null) {
@@ -55,8 +63,12 @@ public class TrackingLinkService {
         // *****************************
         // Controller 에서 계산하여 전달된 skip/size 값을 그대로 사용해
         // 목록 API를 다시 호출하고 현재 페이지에 해당하는 항목만 조회한다.
-        TrackingLinkListResponseDto listResponse =
-                airbridgeClient.getTrackingLinks(auth, language, params.toMap());
+        RestMessage<TrackingLinkListResponseDto> listMessage =
+                feignClientAdaptor.get()
+                        .uri("/tracking-links")
+                        .params(params.toMap())
+                        .retrieve(TrackingLinkListResponseDto.class);
+        TrackingLinkListResponseDto listResponse = listMessage.getData();
 
         List<TrackingLinkDetailOutputDto> details = new ArrayList<>();
         if (listResponse != null
@@ -66,8 +78,12 @@ public class TrackingLinkService {
             for (TrackingLinkListResponseDto.Item item :
                     listResponse.getData().getTrackingLinks()) {
                 String id = item.getId();
-                TrackingLinkDetailResponseDto detailResponse =
-                        airbridgeClient.getTrackingLinkDetail(auth, language, id, "id");
+                RestMessage<TrackingLinkDetailResponseDto> detailMessage =
+                        feignClientAdaptor.get()
+                                .uri("/tracking-links/" + id)
+                                .params(Map.of("idType", "id"))
+                                .retrieve(TrackingLinkDetailResponseDto.class);
+                TrackingLinkDetailResponseDto detailResponse = detailMessage.getData();
                 TrackingLinkDetailDataDto detailData =
                         detailResponse != null ? detailResponse.getData() : null;
                 details.add(new TrackingLinkDetailOutputDto(id, detailData));
