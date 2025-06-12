@@ -48,3 +48,21 @@ curl "http://localhost:8080/tracking-links/details?from=2023-04-01&to=2023-04-02
 ```
 
 응답 JSON에는 전체 항목 수를 나타내는 `allCnt`와 해당 페이지의 상세 목록이 포함됩니다.
+
+### Airbridge Tracking Link API
+
+아래 문서를 참고하면 Airbridge API 의 파라미터와 응답 형식을 자세히 확인할 수 있습니다.
+- 목록 가져오기: https://help.airbridge.io/ko/references/tracking-link#%EB%AA%A9%EB%A1%9D-%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0
+- 세부 정보 가져오기: https://help.airbridge.io/ko/references/tracking-link#%EC%84%B8%EB%B6%80-%EC%A0%95%EB%B3%B4-%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0
+
+**목록 가져오기 API**
+- 메서드: `GET /v1/tracking-links`
+- 필수 파라미터: `from`, `to`
+- 페이지네이션: `skip`, `size` 값을 전달해 원하는 구간의 ID 목록을 가져옵니다.
+- 응답 예시에는 `totalCount`와 `trackingLinks` 배열이 포함됩니다.
+
+**세부 정보 가져오기 API**
+- 메서드: `GET /v1/tracking-links/{id}`
+- 경로 변수 `id` 로 조회할 항목을 지정합니다.
+- 필요에 따라 `idType`(기본 `id`) 파라미터를 사용할 수 있습니다.
+- 응답은 링크 URL, 채널명, 캠페인 파라미터 등을 담은 `data` 객체를 반환합니다.
